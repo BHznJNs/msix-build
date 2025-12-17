@@ -1,0 +1,82 @@
+name: "MSIX Build"
+
+inputs:
+  app-build-path:
+    description: "The path to the app build"
+    required: true
+  icon-path:
+    description: "The path to the app icon"
+    required: true
+  appx-manifest-path:
+    description: "The path to the AppxManifest.xml file"
+    required: true
+  priconfig-path:
+    description: "The path to the priconfig.xml file"
+    required: true
+
+outputs:
+  msix-path:
+    description: "The path to the generated MSIX file"
+    value: ${{ steps.msix_build_step.outputs.msix-path }}
+
+runs:
+  using: "composite"
+  env:
+    WORKING_DIRECTORY: ${{ runner.temp }}/msix-build
+  steps:
+    - name: Install winget
+      uses: Cyberboss/install-winget@v1
+
+    - name: Setup ImageMagick
+      run: winget install ImageMagick.ImageMagick -e
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Create Working Directory
+      shell: pwsh
+      run: |
+        if (!(Test-Path "${{ env.WORKING_DIRECTORY }}")) {
+          New-Item -ItemType Directory -Path "${{ env.WORKING_DIRECTORY }}" -Force
+        }
+
+    - name: Generate UWP Icons
+      shell: bash
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+      run: |
+        chmod +x "${{ github.action_path }}/scripts/generate_uwp_icons.sh"
+        "${{ github.action_path }}/scripts/generate_uwp_icons.sh" "${{ inputs.icon-path }}"
+        # outputs to ${{ env.WORKING_DIRECTORY }}/Assets
+
+    - name: Copy input files
+      shell: pwsh
+      run: |
+        # copy appx manifest to ${{ env.WORKING_DIRECTORY }}/AppxManifest.xml
+        Copy-Item -Path ${{ inputs.appx-manifest-path }} -Destination ${{ env.WORKING_DIRECTORY }}/AppxManifest.xml -Force
+
+        # copy all files under app build to ${{ env.WORKING_DIRECTORY }}/Source
+        $sourceWithWildcard = Join-Path -Path ${{ inputs.app-build-path }} -ChildPath "*"
+        $dest = Join-Path -Path $env:WORKING_DIRECTORY -ChildPath "Source"
+        if (!(Test-Path -Path $dest)) {
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+        }
+        Copy-Item -Path $sourceWithWildcard -Destination $dest -Recurse -Force
+
+    - name: Generate resources.pri
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+      shell: pwsh
+      run: |
+        makepri new /pr . /cf ${{ inputs.priconfig-path }} /mn AppxManifest.xml /of /o
+        # outputs to ${{ env.WORKING_DIRECTORY }}/resources.pri
+    
+    - name: Build MSIX
+      id: msix_build_step
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+      shell: pwsh
+      run: |
+
+        makeappx pack /d . /p ./out.msix /o
+        # outputs to ${{ env.WORKING_DIRECTORY }}/out.msix
+
+        $fullPath = Join-Path $env:WORKING_DIRECTORY "out.msix"
+        "msix-path=$fullPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
