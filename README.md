@@ -14,7 +14,10 @@ An action automates the process of building an MSIX package.
     appx-manifest-path: ./AppxManifest.xml
     priconfig-path: ./priconfig.xml
 
-# use output: ${{ steps.msix-build.outputs.msix-path }}
+# - uses: actions/upload-artifact@v4
+#   with:
+#     name: YourAppName
+#     path: ${{ steps.msix-build.outputs.msix-path }}
 ```
 
 ## How to create `priconfig.xml`
