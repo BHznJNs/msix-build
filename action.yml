@@ -1,4 +1,5 @@
 name: "MSIX Build"
+description: "An action automates the process of building an MSIX package."
 
 inputs:
   app-build-path:
