@@ -33,7 +33,7 @@ runs:
       shell: pwsh
       run: choco install imagemagick --no-progress
 
-    - uses: GuillaumeFalourd/setup-windows10-sdk-action@v2.4
+    - uses: ilammy/msvc-dev-cmd@v1
 
     - name: Create Working Directory
       shell: pwsh
