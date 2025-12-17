@@ -33,19 +33,7 @@ runs:
       shell: pwsh
       run: choco install imagemagick --no-progress
 
-    - name: Add Windows SDK to PATH
-      shell: pwsh
-      run: |
-        $kits = "C:\Program Files (x86)\Windows Kits\10\bin"
-        # 1. 获取该目录下版本号最大的文件夹 (例如 10.0.22621.0)
-        $latest = Get-ChildItem $kits | Where-Object { $_.PSIsContainer } | Sort-Object Name -Descending | Select-Object -First 1
-
-        # 2. 拼接 x64 路径
-        $sdkPath = Join-Path $latest.FullName "x64"
-
-        # 3. 输出并添加到 GitHub PATH
-        Write-Host "Detected latest Windows SDK: $sdkPath"
-        echo "$sdkPath" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+    - uses: GuillaumeFalourd/setup-windows10-sdk-action@v2.4
 
     - name: Create Working Directory
       shell: pwsh
