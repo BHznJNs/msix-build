@@ -68,15 +68,14 @@ runs:
       working-directory: ${{ env.WORKING_DIRECTORY }}
       shell: pwsh
       run: |
-        makepri new /pr . /cf "${{ github.workspace }}/${{ inputs.priconfig-path }}" /mn AppxManifest.xml /of /o
+        makepri new /pr . /cf "${{ github.workspace }}/${{ inputs.priconfig-path }}" /mn AppxManifest.xml
         # outputs to ${{ env.WORKING_DIRECTORY }}/resources.pri
-    
+
     - name: Build MSIX
       id: msix_build_step
       working-directory: ${{ env.WORKING_DIRECTORY }}
       shell: pwsh
       run: |
-
         makeappx pack /d . /p ./out.msix /o
         # outputs to ${{ env.WORKING_DIRECTORY }}/out.msix
 
