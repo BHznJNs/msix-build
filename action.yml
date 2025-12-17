@@ -48,17 +48,17 @@ runs:
       working-directory: ${{ env.WORKING_DIRECTORY }}
       run: |
         chmod +x "${{ github.action_path }}/scripts/generate_uwp_icons.sh"
-        "${{ github.action_path }}/scripts/generate_uwp_icons.sh" "${{ inputs.icon-path }}"
+        "${{ github.action_path }}/scripts/generate_uwp_icons.sh" "${{ github.workspace }}/${{ inputs.icon-path }}"
         # outputs to ${{ env.WORKING_DIRECTORY }}/Assets
 
     - name: Copy input files
       shell: pwsh
       run: |
         # copy appx manifest to ${{ env.WORKING_DIRECTORY }}/AppxManifest.xml
-        Copy-Item -Path ${{ inputs.appx-manifest-path }} -Destination ${{ env.WORKING_DIRECTORY }}/AppxManifest.xml -Force
+        Copy-Item -Path "${{ github.workspace }}/${{ inputs.appx-manifest-path }}" -Destination ${{ env.WORKING_DIRECTORY }}/AppxManifest.xml -Force
 
         # copy all files under app build to ${{ env.WORKING_DIRECTORY }}/Source
-        $sourceWithWildcard = Join-Path -Path ${{ inputs.app-build-path }} -ChildPath "*"
+        $sourceWithWildcard = Join-Path -Path "${{ github.workspace }}/${{ inputs.app-build-path }}" -ChildPath "*"
         $dest = Join-Path -Path $env:WORKING_DIRECTORY -ChildPath "Source"
         if (!(Test-Path -Path $dest)) {
           New-Item -ItemType Directory -Path $dest -Force | Out-Null
@@ -69,7 +69,7 @@ runs:
       working-directory: ${{ env.WORKING_DIRECTORY }}
       shell: pwsh
       run: |
-        makepri new /pr . /cf ${{ inputs.priconfig-path }} /mn AppxManifest.xml /of /o
+        makepri new /pr . /cf "${{ github.workspace }}/${{ inputs.priconfig-path }}" /mn AppxManifest.xml /of /o
         # outputs to ${{ env.WORKING_DIRECTORY }}/resources.pri
     
     - name: Build MSIX
