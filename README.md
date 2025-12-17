@@ -1,3 +1,68 @@
 # MSIX Build
 
 An action automates the process of building an MSIX package.
+
+## Example
+
+```yaml
+- name: MSIX Build
+  id: msix-build
+  uses: BHznJNs/msix-build@v0.9
+  with:
+    app-build-path: ./dist
+    icon-path: ./icon.png
+    appx-manifest-path: ./AppxManifest.xml
+    priconfig-path: ./priconfig.xml
+
+# use output: ${{ steps.msix-build.outputs.msix-path }}
+```
+
+## How to create `priconfig.xml`
+
+```powershell
+makepri createconfig /cf priconfig.xml /dq en-US /pv 10.0.0 /o
+```
+
+It's recommanded to remove the `<packaging>` part in the generated file.
+
+## `AppxManifest.xml` Example
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:mp="http://schemas.microsoft.com/appx/manifest/mp/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+         xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap mp uap5 uap10 rescap">
+  <!--Package created by MSIX Packaging Tool version: 1.2024.405.0-->
+  <Identity Name="[YourAppId]" Publisher="[YourPublisherId]" Version="0.1.22.0" ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>[YourAppDisplayName]</DisplayName>
+    <PublisherDisplayName>[YourPublisherDisplayName]</PublisherDisplayName>
+    <Description>None</Description>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Resources>
+    <Resource Language="en-us" />
+    <Resource Language="zh-cn" />
+    <!-- more languages -->
+  </Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22000.1" />
+  </Dependencies>
+  <Applications>
+    <Application Id="[YourApplicationId]" Executable="Source/[YourAppEntryExecutableFile]" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements BackgroundColor="transparent" DisplayName="[YourAppDisplayName]" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="[YourAppExecutable]">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\Square310x310Logo.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+    <DeviceCapability Name="usb" />
+  </Capabilities>
+</Package>
+```
