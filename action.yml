@@ -29,12 +29,9 @@ runs:
         $workDir = Join-Path "${{ runner.temp }}" "msix-build"
         echo "WORKING_DIRECTORY=$workDir" >> $env:GITHUB_ENV
 
-    - name: Install winget
-      uses: Cyberboss/install-winget@v1
-
     - name: Setup ImageMagick
       shell: pwsh
-      run: winget install ImageMagick.ImageMagick -e --accept-source-agreements --accept-package-agreements
+      run: choco install imagemagick --no-progress
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v2
